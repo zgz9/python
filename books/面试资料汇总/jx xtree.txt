@@ -1,0 +1,47 @@
+<script type="text/javascript">
+ 		
+  		var tree = new WebFXTree('管理中心');
+  		
+  		var folder1 = new WebFXTreeItem('意向客户');
+  		
+  			var item11 = new WebFXTreeItem('客户列表');
+  			item11.action="${pageContext.request.contextPath }/control/customer/customer.do?method=list";
+  			item11.target = "right";
+  			
+  			var item12 = new WebFXTreeItem('查询客户');
+  			item12.action="${pageContext.request.contextPath }/control/customer/customer.do?method=query";
+  			item12.target = "right";
+  			
+  			var item15 = new WebFXTreeItem('导出excel');
+  			item15.action="${pageContext.request.contextPath }/control/customer/customer.do?method=exportExcel";
+  			item15.target = "right";
+  			
+  			var item13 = new WebFXTreeItem('信息来源管理');
+  			item13.action="${pageContext.request.contextPath }/control/customer/infoSource.do?method=list";
+  			item13.target = "right";
+  			
+  			
+  			var item14 = new WebFXTreeItem('客户状态管理');
+  			item14.action="${pageContext.request.contextPath }/control/customer/customerStatus.do?method=list";
+  			item14.target = "right";
+  			
+  		folder1.add(item11);	
+  		folder1.add(item12);	
+  		folder1.add(item15);	
+  		folder1.add(item13);	
+  		folder1.add(item14);	
+  		
+  		tree.add(folder1);
+  		
+  		var folder2 = new WebFXTreeItem('学员管理');
+  		tree.add(folder2);
+  		
+  		var folder3 = new WebFXTreeItem('广告营销');
+  		tree.add(folder3);
+  		
+  		var folder4 = new WebFXTreeItem('权限管理');
+  		tree.add(folder4);
+  		
+  		document.write(tree);
+  		
+  	</script>

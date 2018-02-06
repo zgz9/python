@@ -1,0 +1,23 @@
+/*
+create [or replace] PROCEDURE 过程名(参数列表)  
+AS 
+        PLSQL子程序体；
+
+打印Hello World
+
+调用
+1. exec sayHelloWorld();
+2. begin
+      sayHelloWorld();
+      sayHelloWorld();
+   end;
+   /
+*/
+create or replace procedure sayHelloWorld
+as
+  --变量说明
+begin
+  dbms_output.put_line('Hello World');
+
+end;
+/

@@ -1,0 +1,210 @@
+SQL> create view empincomeview
+  2  as
+  3  select e.empno,e.ename,e.sal,e.sal*12 annlsal, e.sal*12+nvl(comm,0) income,d.dname
+  4  from emp e, dept d
+  5  where e.deptno=d.deptno;
+create view empincomeview
+            *
+第 1 行出现错误: 
+ORA-01031: 权限不足 
+
+
+SQL> /
+
+视图已创建。
+
+SQL> desc empincomeview
+ 名称                                                              是否为空? 类型
+ ----------------------------------------------------------------- -------- --------------------------------------------
+ EMPNO                                                             NOT NULL NUMBER(4)
+ ENAME                                                                      VARCHAR2(10)
+ SAL                                                                        NUMBER(7,2)
+ ANNLSAL                                                                    NUMBER
+ INCOME                                                                     NUMBER
+ DNAME                                                                      VARCHAR2(14)
+
+SQL> select * from empincomeview;
+
+     EMPNO ENAME        SAL    ANNLSAL     INCOME DNAME                                                                 
+---------- ---------- ----- ---------- ---------- --------------                                                        
+      7369 SMITH        800       9600       9600 RESEARCH                                                              
+      7499 ALLEN       1600      19200      19500 SALES                                                                 
+      7521 WARD        1250      15000      15500 SALES                                                                 
+      7566 JONES       2975      35700      35700 RESEARCH                                                              
+      7654 MARTIN      1250      15000      16400 SALES                                                                 
+      7698 BLAKE       2850      34200      34200 SALES                                                                 
+      7782 CLARK       2450      29400      29400 ACCOUNTING                                                            
+      7788 SCOTT       3000      36000      36000 RESEARCH                                                              
+      7839 KING        5000      60000      60000 ACCOUNTING                                                            
+      7844 TURNER      1500      18000      18000 SALES                                                                 
+      7876 ADAMS       1100      13200      13200 RESEARCH                                                              
+
+     EMPNO ENAME        SAL    ANNLSAL     INCOME DNAME                                                                 
+---------- ---------- ----- ---------- ---------- --------------                                                        
+      7900 JAMES        950      11400      11400 SALES                                                                 
+      7902 FORD        3000      36000      36000 RESEARCH                                                              
+      7934 MILLER      1300      15600      15600 ACCOUNTING                                                            
+
+已选择14行。
+
+SQL> create or replace view empincomeview
+  2  as
+  3  select e.empno,e.ename,e.sal,e.sal*12 annlsal, e.sal*12+nvl(comm,0) income,d.dname
+  4  from emp e, dept d
+  5  where e.deptno=d.deptno
+  6  with read only;
+
+视图已创建。
+
+SQL> host cls
+
+SQL> --序列 sequnce
+SQL> create sequence myseq;
+
+序列已创建。
+
+SQL> create table tableA
+  2  (tid number,
+  3   tname varchar2(20));
+
+表已创建。
+
+SQL> select myseq.currval from dual;
+select myseq.currval from dual
+       *
+第 1 行出现错误: 
+ORA-08002: 序列 MYSEQ.CURRVAL 尚未在此会话中定义 
+
+
+SQL> select myseq.nextval from dual;
+
+   NEXTVAL                                                                                                              
+----------                                                                                                              
+         1                                                                                                              
+
+已选择 1 行。
+
+SQL> /
+
+   NEXTVAL                                                                                                              
+----------                                                                                                              
+         2                                                                                                              
+
+已选择 1 行。
+
+SQL> select myseq.currval from dual;
+
+   CURRVAL                                                                                                              
+----------                                                                                                              
+         2                                                                                                              
+
+已选择 1 行。
+
+SQL> insert into tableA values(myseq.nextval,'aaa');
+
+已创建 1 行。
+
+SQL> /
+
+已创建 1 行。
+
+SQL> /
+
+已创建 1 行。
+
+SQL> commit;
+
+提交完成。
+
+SQL> select * from tableA;
+
+       TID TNAME                                                                                                        
+---------- --------------------                                                                                         
+         3 aaa                                                                                                          
+         4 aaa                                                                                                          
+         5 aaa                                                                                                          
+
+已选择3行。
+
+SQL> /*
+SQL> 某些情况下，可能不连续
+SQL> 1. 回滚
+SQL> 2. 掉电
+SQL> 3. 多个表共用一个序列
+SQL> */
+SQL> insert into tableA values(myseq.nextval,'aaa');
+
+已创建 1 行。
+
+SQL> /
+
+已创建 1 行。
+
+SQL> rollback;
+
+回退已完成。
+
+SQL> insert into tableA values(myseq.nextval,'aaa');
+
+已创建 1 行。
+
+SQL> select * from tableA;
+
+       TID TNAME                                                                                                        
+---------- --------------------                                                                                         
+         3 aaa                                                                                                          
+         4 aaa                                                                                                          
+         5 aaa                                                                                                          
+         8 aaa                                                                                                          
+
+已选择4行。
+
+SQL> host cls
+
+SQL> --索引
+SQL> create index myindex on emp(deptno);
+
+索引已创建。
+
+SQL> host cls
+
+SQL> --同义词
+SQL> show user
+USER 为 "SCOTT"
+SQL> --能访问hr下的表
+SQL> select count(*) from hr.employees;
+select count(*) from hr.employees
+                        *
+第 1 行出现错误: 
+ORA-00942: 表或视图不存在 
+
+
+SQL> /
+
+  COUNT(*)                                                                                                              
+----------                                                                                                              
+       107                                                                                                              
+
+已选择 1 行。
+
+SQL> --为hr.employees创建别名--> 同义词
+SQL> create synonym hremp for hr.employees;
+create synonym hremp for hr.employees
+*
+第 1 行出现错误: 
+ORA-01031: 权限不足 
+
+
+SQL> /
+
+同义词已创建。
+
+SQL> select count(*) from hremp;
+
+  COUNT(*)                                                                                                              
+----------                                                                                                              
+       107                                                                                                              
+
+已选择 1 行。
+
+SQL> spool off

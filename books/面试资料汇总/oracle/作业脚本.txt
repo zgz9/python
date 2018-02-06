@@ -1,0 +1,72 @@
+create table test1
+(id int primary key,
+ name varchar(20),
+ money int);
+
+insert into test1 values(1,'Tom',1000);
+insert into test1 values(2,'Mary',2000);
+insert into test1 values(3,'Mike',3000);
+insert into test1 values(4,'Jeff',4000);
+
+select money money1 from test1;
+//插入空值
+select to_number(null) from dual;
+两个集合合并union
+
+select test1.id,test1.name,test1.money,ab.money1 from test1,
+(select id+1 id, money money1 from test1
+union
+select to_number(null),to_number(null) from test1) ab 
+where test1.id= ab.id(+)
+order by id;
+
+相关子查询
+题目描述：前面一个人的钱数赋值赋给后面一个人的钱数
+select test1.id,test1.name,test1.money from test1 t1
+where test1.name = (select id+1 id,name,money money1 from test1 t2 where t2.id = t1.id) 
+
+select test1.id,test1.name,test1.money, 
+(select id+1 id,money from test1 t2 where t2.id = t1.id) money1
+from test1 t1
+
+select id,name,money, 
+(select money from 
+(select id+1 id,money from test1)
+t2 where t2.id = t1.id) money1
+from test1 t1
+
+rollup
+
+建表语句：
+ create table pm_ci
+ (ci_id varchar(20) primary key,
+  stu_ids varchar(100));
+
+insert into pm_ci values('1','1,2,3,4');
+insert into pm_ci values('2','1,4');
+
+ create table pm_stu
+ (stu_id varchar(20) primary key,
+  stu_name varchar(20));
+insert into pm_stu values('1','张三');
+insert into pm_stu values('2','李四');
+insert into pm_stu values('3','王五');
+insert into pm_stu values('4','赵六');
+
+题目描述：ci中包含的id值，到stu表中查找，将得到的名字用wm_concat函数拼接起来
+或者是从stu表中逐个取出id看是否在ci的列中，在就将名称写进去
+
+select * from pm_ci c,pm_stu s
+where c.stu_id
+
+SELECT REGEXP_SUBSTR (ci_id, stu_ids, '[^,]+', 1,rownum) 
+FROM pm_ci 
+CONNECT BY ROWNUM <= 
+LENGTH (ci_id, stu_ids)– LENGTH (REPLACE (ci_id, stu_ids, ',','')) 
++1
+
+SELECT REGEXP_SUBSTR (‘first field, second field , third field’, ‘[^,]+’, 1,rownum) 
+FROM DUAL 
+CONNECT BY ROWNUM <= 
+LENGTH (‘first field, second field , third field’) – LENGTH (REPLACE (‘first field, second field , third field’, ‘,’, ”)) 
++1

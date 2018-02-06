@@ -1,0 +1,12 @@
+--查询某个员工的姓名 职位 月薪
+
+create or replace procedure queryEmpInfo(eno in number,
+                                         pename out varchar2,
+                                         pjob  out varchar2,
+                                         psal  out number)
+as
+begin
+
+  select ename,empjob,sal into pename,pjob,psal from emp where empno=eno;
+end;
+/

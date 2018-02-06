@@ -1,0 +1,313 @@
+SQL> /*
+SQL> 清华大学BBS: www.newsmth.net
+SQL> 甲骨文招聘官方微博：新浪微博  甲骨文招聘
+SQL> */
+SQL> host cls
+
+SQL> --datalink 数据库链路(第四天 分布式数据库)
+SQL> create table test1
+  2  (tid number,
+  3   tname varchar2(20));
+
+表已创建。
+
+SQL> ed
+已写入 file afiedt.buf
+
+  1  create table test2
+  2  (tid number,
+  3   tname varchar2(20),
+  4*  hiredate date default sysdate)
+SQL> /
+
+表已创建。
+
+SQL> host cls
+
+SQL> --行地址rowid 伪列
+SQL> select rowid,empno,ename,sal
+  2  from emp;
+
+ROWID                   EMPNO ENAME        SAL                                                                          
+------------------ ---------- ---------- -----                                                                          
+AAANFyAAEAAAAAcAAA       7369 SMITH        800                                                                          
+AAANFyAAEAAAAAcAAB       7499 ALLEN       1600                                                                          
+AAANFyAAEAAAAAcAAC       7521 WARD        1250                                                                          
+AAANFyAAEAAAAAcAAD       7566 JONES       2975                                                                          
+AAANFyAAEAAAAAcAAE       7654 MARTIN      1250                                                                          
+AAANFyAAEAAAAAcAAF       7698 BLAKE       2850                                                                          
+AAANFyAAEAAAAAcAAG       7782 CLARK       2450                                                                          
+AAANFyAAEAAAAAcAAH       7788 SCOTT       3000                                                                          
+AAANFyAAEAAAAAcAAI       7839 KING        5000                                                                          
+AAANFyAAEAAAAAcAAJ       7844 TURNER      1500                                                                          
+AAANFyAAEAAAAAcAAK       7876 ADAMS       1100                                                                          
+
+ROWID                   EMPNO ENAME        SAL                                                                          
+------------------ ---------- ---------- -----                                                                          
+AAANFyAAEAAAAAcAAL       7900 JAMES        950                                                                          
+AAANFyAAEAAAAAcAAM       7902 FORD        3000                                                                          
+AAANFyAAEAAAAAcAAN       7934 MILLER      1300                                                                          
+
+已选择14行。
+
+SQL> create table emp20
+  2  as
+  3  select * from emp where deptno=20;
+
+表已创建。
+
+SQL> select * from emp20;
+
+     EMPNO ENAME      JOB              MGR HIREDATE         SAL       COMM     DEPTNO                                   
+---------- ---------- --------- ---------- -------------- ----- ---------- ----------                                   
+      7369 SMITH      CLERK           7902 17-12月-80       800                    20                                   
+      7566 JONES      MANAGER         7839 02-4月 -81      2975                    20                                   
+      7788 SCOTT      ANALYST         7566 13-7月 -87      3000                    20                                   
+      7876 ADAMS      CLERK           7788 13-7月 -87      1100                    20                                   
+      7902 FORD       ANALYST         7566 03-12月-81      3000                    20                                   
+
+已选择5行。
+
+SQL> --创建表：员工号 姓名 月薪 年薪 年收入 部门名称
+SQL> create table empincome
+  2  as
+  3  select e.empno,e.ename,e.sal,e.sal*12 annlsal, e.sal*12+nvl(comm,0) income,d.dname
+  4  from emp e, dept d
+  5  where e.deptno=d.deptno;
+
+表已创建。
+
+SQL> select * from empincome;
+
+     EMPNO ENAME        SAL    ANNLSAL     INCOME DNAME                                                                 
+---------- ---------- ----- ---------- ---------- --------------                                                        
+      7369 SMITH        800       9600       9600 RESEARCH                                                              
+      7499 ALLEN       1600      19200      19500 SALES                                                                 
+      7521 WARD        1250      15000      15500 SALES                                                                 
+      7566 JONES       2975      35700      35700 RESEARCH                                                              
+      7654 MARTIN      1250      15000      16400 SALES                                                                 
+      7698 BLAKE       2850      34200      34200 SALES                                                                 
+      7782 CLARK       2450      29400      29400 ACCOUNTING                                                            
+      7788 SCOTT       3000      36000      36000 RESEARCH                                                              
+      7839 KING        5000      60000      60000 ACCOUNTING                                                            
+      7844 TURNER      1500      18000      18000 SALES                                                                 
+      7876 ADAMS       1100      13200      13200 RESEARCH                                                              
+
+     EMPNO ENAME        SAL    ANNLSAL     INCOME DNAME                                                                 
+---------- ---------- ----- ---------- ---------- --------------                                                        
+      7900 JAMES        950      11400      11400 SALES                                                                 
+      7902 FORD        3000      36000      36000 RESEARCH                                                              
+      7934 MILLER      1300      15600      15600 ACCOUNTING                                                            
+
+已选择14行。
+
+SQL> host cls
+
+SQL> --修改表
+SQL> desc test1
+ 名称                                                              是否为空? 类型
+ ----------------------------------------------------------------- -------- --------------------------------------------
+ TID                                                                        NUMBER
+ TNAME                                                                      VARCHAR2(20)
+
+SQL> alter table test1 add image blob;
+
+表已更改。
+
+SQL> desc test1
+ 名称                                                              是否为空? 类型
+ ----------------------------------------------------------------- -------- --------------------------------------------
+ TID                                                                        NUMBER
+ TNAME                                                                      VARCHAR2(20)
+ IMAGE                                                                      BLOB
+
+SQL> alter table test1 modify tname varchar2(40);
+
+表已更改。
+
+SQL> alter table test1 drop column image;
+
+表已更改。
+
+SQL> desc test1
+ 名称                                                              是否为空? 类型
+ ----------------------------------------------------------------- -------- --------------------------------------------
+ TID                                                                        NUMBER
+ TNAME                                                                      VARCHAR2(40)
+
+SQL> alter table test1 rename column tname to username;
+
+表已更改。
+
+SQL> desc test1
+ 名称                                                              是否为空? 类型
+ ----------------------------------------------------------------- -------- --------------------------------------------
+ TID                                                                        NUMBER
+ USERNAME                                                                   VARCHAR2(40)
+
+SQL> host cls
+
+SQL> --删除表 drop table
+SQL> select * from tab;
+
+TNAME                          TABTYPE  CLUSTERID                                                                       
+------------------------------ ------- ----------                                                                       
+DEPT                           TABLE                                                                                    
+EMP                            TABLE                                                                                    
+BONUS                          TABLE                                                                                    
+SALGRADE                       TABLE                                                                                    
+EMP10                          TABLE                                                                                    
+TESTSAVEPOINT                  TABLE                                                                                    
+TESTDELETE                     TABLE                                                                                    
+TEST1                          TABLE                                                                                    
+TEST2                          TABLE                                                                                    
+EMP20                          TABLE                                                                                    
+EMPINCOME                      TABLE                                                                                    
+
+已选择11行。
+
+SQL> drop table test2;
+
+表已删除。
+
+SQL> select * from tab;
+
+TNAME                          TABTYPE  CLUSTERID                                                                       
+------------------------------ ------- ----------                                                                       
+DEPT                           TABLE                                                                                    
+EMP                            TABLE                                                                                    
+BONUS                          TABLE                                                                                    
+SALGRADE                       TABLE                                                                                    
+EMP10                          TABLE                                                                                    
+TESTSAVEPOINT                  TABLE                                                                                    
+TESTDELETE                     TABLE                                                                                    
+TEST1                          TABLE                                                                                    
+EMP20                          TABLE                                                                                    
+EMPINCOME                      TABLE                                                                                    
+BIN$IslTIX6yRge+IZlRTf4gxw==$0 TABLE                                                                                    
+
+已选择11行。
+
+SQL> --Oracle的回收站
+SQL> --查询回收站
+SQL> show recyclebin
+ORIGINAL NAME    RECYCLEBIN NAME                OBJECT TYPE  DROP TIME                                                  
+---------------- ------------------------------ ------------ -------------------                                        
+TEST2            BIN$IslTIX6yRge+IZlRTf4gxw==$0 TABLE        2013-06-05:15:28:02                                        
+SQL> --清空回收站
+SQL> purge recyclebin;
+
+回收站已清空。
+
+SQL> show recyclebin
+SQL> drop table test1 purge;
+
+表已删除。
+
+SQL> show recyclebin
+SQL> host cls
+
+SQL> select * from  TESTSAVEPOINT;
+
+       TID TNAME                                                                                                        
+---------- --------------------                                                                                         
+         1 Tom                                                                                                          
+         2 Mary                                                                                                         
+
+已选择2行。
+
+SQL> drop table TESTSAVEPOINT;
+
+表已删除。
+
+SQL> show recyclebin
+ORIGINAL NAME    RECYCLEBIN NAME                OBJECT TYPE  DROP TIME                                                  
+---------------- ------------------------------ ------------ -------------------                                        
+TESTSAVEPOINT    BIN$1xZLPReNQY+wJWi53B6T9w==$0 TABLE        2013-06-05:15:31:31                                        
+SQL> select * from tab;
+
+TNAME                          TABTYPE  CLUSTERID                                                                       
+------------------------------ ------- ----------                                                                       
+DEPT                           TABLE                                                                                    
+EMP                            TABLE                                                                                    
+BONUS                          TABLE                                                                                    
+SALGRADE                       TABLE                                                                                    
+EMP10                          TABLE                                                                                    
+TESTDELETE                     TABLE                                                                                    
+BIN$1xZLPReNQY+wJWi53B6T9w==$0 TABLE                                                                                    
+EMP20                          TABLE                                                                                    
+EMPINCOME                      TABLE                                                                                    
+
+已选择9行。
+
+SQL>  select * from  TESTSAVEPOINT;
+ select * from  TESTSAVEPOINT
+                *
+第 1 行出现错误: 
+ORA-00942: 表或视图不存在 
+
+
+SQL> select * from BIN$1xZLPReNQY+wJWi53B6T9w==$0;
+select * from BIN$1xZLPReNQY+wJWi53B6T9w==$0
+                            *
+第 1 行出现错误: 
+ORA-00933: SQL 命令未正确结束 
+
+
+SQL> select * from "BIN$1xZLPReNQY+wJWi53B6T9w==$0";
+
+       TID TNAME                                                                                                        
+---------- --------------------                                                                                         
+         1 Tom                                                                                                          
+         2 Mary                                                                                                         
+
+已选择2行。
+
+SQL> --回收站：注意  管理员没有回收站
+SQL> --第四天 闪回 如何操作回收站
+SQL> host cls
+
+SQL> --检查性约束
+SQL> create table test3
+  2  (tid number,
+  3   tname varchar2(20),
+  4   gender varchar2(4) check (gender in ('男','女')),
+  5   sal number check (sal>0)
+  6  );
+
+表已创建。
+
+SQL> insert into test3 values(1,'Tom','男', 6000);
+
+已创建 1 行。
+
+SQL> insert into test3 values(2,'Tom','啊', 6000);
+insert into test3 values(2,'Tom','啊', 6000)
+*
+第 1 行出现错误: 
+ORA-02290: 违反检查约束条件 (SCOTT.SYS_C005604) 
+
+
+SQL> create table student
+  2  (sid varchar2(10) constraint student_PK primary key,
+  3   sname varchar2(30) constraint student_Name_NotNull not null,
+  4   gender varchar2(4) constraint student_Gender check (gender in ('男','女')),
+  5   email varchar2(20) constraint student_Email_Unique unique
+  6                      constraint student_Email_NotNull not null,
+  7   deptno number constraint student_FK references dept(deptno) ON DELETE CASCADE
+  8  );
+
+表已创建。
+
+SQL> insert into student values('p001','Tom','男','tom@126.com',10);
+
+已创建 1 行。
+
+SQL> insert into student values('p002','Tom','男','tom@126.com',10);
+insert into student values('p002','Tom','男','tom@126.com',10)
+*
+第 1 行出现错误: 
+ORA-00001: 违反唯一约束条件 (SCOTT.STUDENT_EMAIL_UNIQUE) 
+
+
+SQL> spool off

@@ -1,0 +1,167 @@
+1、zTree是jQuery的一个插件
+2、建立一个树的基本步骤
+	1、一次性加载树
+		1、导入三个文件
+			<link rel="stylesheet" href="zTreeStyle/zTreeStyle.css" type="text/css">
+			<script type="text/javascript" src="jquery-1.4.2.js"></script>
+			<script type="text/javascript" src="jquery-ztree-2.5.js"></script>
+		2、在页面上建立树的容器：
+			<ul id="tree" class="tree" style="width:230px; overflow:auto;"></ul>
+			class为"tree"就是树的容器
+		3、在js中生成树
+			zTree:
+				1、该函数的调用者是树的容器
+				2、有两个参数
+					1、setting:	对树的整个特性的描述
+					2、zNodes:	对树的每一个节点的描述
+				3、js代码
+					var setting = {
+						isSimpleData: true,
+						treeNodeKey: "id",
+						treeNodeParentKey: "pid",
+						showLine: true,
+						root:{ 
+							isRoot:true,
+							nodes:[]
+						}
+					};
+					zNodes =[
+						{id:1,pid:0,name:'黑马云三期',isParent:true,icon:'user.gif'}
+					];
+					$(document).ready(function(){
+						zTree = $("#tree").zTree(setting, zNodes);
+					})；
+		4、特点：
+			1、和数据库交互一次
+			2、如果树上的数据比较多，则过多的数据会过早的在内存中，如果数据比较少，是比较好的选择
+	2、点击事件加载树
+		1、特点
+			1、和数据库交互很多次
+			2、按照需求加载数据
+		2、步骤
+			1、加载根节点
+				loadRoot: function(){
+					$.post("menuitemAction_showSubMenuitem.action", {
+					    pid: 0
+					}, function(data){//创建树
+					    tree.zTree = $("#tree").zTree(tree.setting, data.menuitemList);
+					});
+				}
+			2、设定触发事件
+				setting: {
+					callback: {//事件
+					    //当该事件执行的时候，树已经加载出来了
+					    expand: function(event, treeId, treeNode){
+						/**
+						 * event鼠标事件
+						 * treeId 树的容器的ID
+						 * treeNOde当前点击的节点
+						 */
+						tree.treeNode = treeNode;
+						
+						tree.loadSubMenuitems();
+					    }
+					}
+				}
+			3、填充触发事件的函数
+				loadSubMenuitems: function(){
+					if (!tree.zTree.getNodeByParam("pid", tree.treeNode.mid)) {//点击的节点没有子节点
+					    $.post("menuitemAction_showSubMenuitem.action", {
+						pid: tree.treeNode.mid
+					    }, function(data){//把子节点的数据追加到父节点上
+						//当执行该回调函数的时候，创建树的代码已经执行了
+						tree.zTree.addNodes(tree.treeNode, data.menuitemList, true);
+					    });
+					}
+				}
+			说明：
+				1、当执行expand事件的时候，树已经加载出来了，在使用addNodes方法的时候，可以利用tree.zTree(已经有值了)调用
+3、关于一个错误：JSONException
+	1、错误的原因
+		1、
+			在action中存在一个属性
+				private Collection<Menuitem> privilegeList;
+			并且该属性有
+				public Collection<Menuitem> getPrivilegeList() {
+					return privilegeList;
+				}
+			struts2-json-plugin插件中就把上述的属性转化成json格式的对象返回到客户端
+
+			该转化是一个深度转化
+			     public class Menuitem{
+				  private Set<User> users;
+			     }
+			不仅要转化menuitem,还要转化users,在转化users时，必须保证users的数据提取出来
+		2、当在dao层，发出一个hql语句"from Menuitem",这样可以把menuitem中的所有的数据加载出来，但是针对Set<User>是懒加载
+		   集合中的user的数据并没有加载出来
+            综述原因会包JSONException的异常
+	2、解决方案
+		1、因为users的数据没有提取出来，所以不加载users
+			@JSON(serialize=false)
+			public Set<User> getUsers() {
+				return users;
+			}
+		2、利用迫切左外连接，在加载menuitem的时候，把user加载出来，但是必须把user中所有的引用属性设置为null,这样
+		   menuitem和user就一起加载出来了
+4、$.post
+	1、回调函数是在服务器成功相应的时候执行的，是异步的过程
+	2、$.post只能读取服务器成功响应的信息
+	3、重构$.post添加错误处理功能
+		1、建立struts2统一的错误处理机制
+			<package name="ajax-error" namespace="/" extends="json-default">
+				<global-results>
+					<result name="errHandler" type="chain">
+						<param name="actionName">errorProcessor</param>
+					</result>
+				</global-results>
+				<global-exception-mappings>
+					<exception-mapping exception="java.lang.Exception"
+						result="errHandler" />
+				</global-exception-mappings>
+
+				<action name="errorProcessor" class="com.itheima03.oa.exception.AjaxErrorProcess">
+					<result type="json"></result>
+				</action>
+			</package>
+		2、在错误处理的类中
+			public class AjaxErrorProcess extends ActionSupport{
+				private String message = "";
+				public String getMessage() {
+					return message;
+				}
+
+				private Exception exception;
+
+				public Exception getException() {
+					return exception;
+				}
+
+				public void setException(Exception exception) {
+					this.exception = exception;
+				}
+
+				public String execute() {
+					/**
+					 * 修改状态码
+					 *    客户端就能感应到服务器端产生异常
+					 */
+					ServletActionContext.getResponse().setStatus(404);
+					this.message = exception.getMessage();
+					return SUCCESS;
+				}
+			}
+			说明：
+				message如果有空，没有异常信息，如果不为空，则有异常信息
+		3、$.post方法的重构
+			(function($){
+			    $.oapost = function(postJSON){
+				$.post(postJSON.url, postJSON.data, function(data){
+					if(data.message==""){
+							postJSON.callback(data);
+						}else{//处理错误信息
+							alert(data.message);
+						}
+				});
+			    }
+			})($);
+			这样写的好处是：在一处处理了错误信息，如果想改，则修改这一个地方即可

@@ -1,0 +1,41 @@
+/*
+实施复杂的安全性检查
+   CREATE  [or REPLACE] TRIGGER  触发器名
+   {BEFORE | AFTER}
+   {DELETE | INSERT | UPDATE [OF 列名]}
+   ON  表名
+   [FOR EACH ROW [WHEN(条件) ] ]
+   PLSQL 块
+
+示例1：限制非工作时间向数据库emp插入数据
+
+非工作时间;
+1. 周末: to_char(sysdate,'day') in ('星期六','星期日')
+
+2. 8小时外: to_number(to_char(sysdate,'hh24')) not between 9 and 18
+*/
+
+create or replace trigger securityemp
+before insert
+on emp
+begin
+  if to_char(sysdate,'day') in ('星期六','星期日') or 
+     to_number(to_char(sysdate,'hh24')) not between 9 and 18 then 
+
+    raise_application_error(-20001,'不能在非工作时间插入数据');
+
+  end if;
+end;
+/
+
+
+
+
+
+
+
+
+
+
+
+
